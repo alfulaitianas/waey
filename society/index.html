@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <title>Waey | Society</title>
+    <meta name="description" content="Designing social frameworks that prioritize empathy, equity, and collective well-being.">
+    <meta name="keywords" content="Society, Community, Empathy, Waey, Oman, Connection">
+    <meta name="author" content="Waey">
+
+    <link rel="icon" type="image/x-icon" href="favicon.ico"> 
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <style>
+        /* --- 1. CSS VARIABLES --- */
+        :root {
+            /* Colors */
+            --bg-body: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --card-bg: rgba(255, 255, 255, 0.8);
+            --card-border: rgba(0, 0, 0, 0.08);
+            --btn-sustain: #10b981;
+            --btn-society: #2563eb; /* Primary Theme Color */
+            --btn-society-light: #60a5fa;
+            --btn-text: #ffffff;
+            --input-bg: #f3f4f6;
+            --input-border: transparent;
+            
+            /* Dropdown Colors */
+            --dropdown-bg: #ffffff;
+            --dropdown-hover: #f3f4f6;
+            
+            /* Effects */
+            --aurora-1: #e6f0ff;
+            --aurora-2: #f0f4ff;
+            --border-width: 1px;
+            --spotlight-opacity: 0.1;
+
+            /* BIO BACKGROUND COLORS */
+            --bio-sustain-rgb: 16, 185, 129;
+            --bio-society-rgb: 37, 99, 235;
+        }
+
+        /* Dark Mode */
+        html[data-theme="dark"] {
+            --bg-body: #050505;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --card-bg: rgba(20, 20, 20, 0.6);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --btn-sustain: #059669;
+            --btn-society: #1d4ed8;
+            --btn-society-light: #3b82f6;
+            --input-bg: #1a1a1a;
+            
+            --dropdown-bg: #1a1a1a;
+            --dropdown-hover: #333333;
+            
+            --aurora-1: #0a1120;
+            --aurora-2: #0f172a;
+            --spotlight-opacity: 0.2;
+        }
+
+        /* High Contrast */
+        html.high-contrast {
+            --aurora-1: transparent !important;
+            --aurora-2: transparent !important;
+            --border-width: 2px;
+            --spotlight-opacity: 0 !important;
+        }
+        html.high-contrast #bio-canvas, html.high-contrast .parallax-blob { display: none; }
+        
+        html.high-contrast[data-theme="light"] {
+            --bg-body: #ffffff !important; --text-main: #000000 !important; --text-muted: #000000 !important;
+            --card-bg: #ffffff !important; --card-border: #000000 !important;
+            --btn-society: #000080 !important;
+        }
+        html.high-contrast[data-theme="dark"] {
+            --bg-body: #000000 !important; --text-main: #ffffff !important; --text-muted: #ffffff !important;
+            --card-bg: #000000 !important; --card-border: #ffffff !important;
+            --btn-society: #3399ff !important;
+        }
+
+        /* --- 2. GLOBAL STYLES --- */
+        html { scroll-behavior: smooth; overflow-x: hidden; width: 100%; }
+        body {
+            font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main);
+            overflow-x: hidden; width: 100%; transition: background-color 0.5s ease, color 0.5s ease;
+        }
+        body.no-scroll { overflow: hidden; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        /* HIDE DEFAULT CURSOR */
+        @media (hover: hover) { * { cursor: none; } }
+        
+        html[lang="ar"] body { font-family: 'Cairo', sans-serif; font-weight: 600; }
+
+        /* --- 3. BACKGROUNDS & PARTICLES --- */
+        #bio-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; pointer-events: none; mix-blend-mode: overlay; }
+        html[data-theme="dark"] #bio-canvas { mix-blend-mode: screen; opacity: 0.7; }
+        .aurora-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -3;
+            background: radial-gradient(circle at 0% 0%, var(--aurora-1), transparent 60%),
+                        radial-gradient(circle at 100% 100%, var(--aurora-2), transparent 60%);
+            filter: blur(80px); opacity: 0.5; transition: background 1s ease;
+        }
+        .parallax-blob {
+            position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.25; z-index: -2;
+            background: var(--btn-society); pointer-events: none; transition: background 0.5s ease;
+        }
+
+        /* --- 4. PRELOADER --- */
+        #preloader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--bg-body); z-index: 99999;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .spinner {
+            width: 50px; height: 50px; border: 3px solid var(--card-border);
+            border-top-color: var(--btn-society); border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- 5. CURSOR (NON-INTERACTIVE BLUE DOT) --- */
+        #cursor-ball {
+            position: fixed;
+            top: 0; left: 0;
+            width: 10px; /* Fixed small size */
+            height: 10px;
+            background: var(--btn-society); /* Solid Society Blue */
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 999999;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+        
+        @media (hover: hover) {
+            #cursor-ball { display: block; }
+            html.high-contrast #cursor-ball {
+                background: var(--text-main) !important;
+                border: 1px solid var(--bg-body) !important;
+            }
+        }
+        @media (hover: none) {
+            #cursor-ball { display: none !important; }
+        }
+
+        /* --- 6. NAV --- */
+        nav {
+            display: flex; justify-content: space-between; align-items: center; padding: 2rem 5%;
+            position: fixed; width: 100%; top: 0; z-index: 100;
+            backdrop-filter: blur(10px); border-bottom: 1px solid var(--card-border);
+        }
+        .logo { font-size: 1.5rem; font-weight: 900; letter-spacing: -1px; display: flex; gap: 6px; align-items: center;}
+        .logo a { text-decoration: none; color: inherit; display: flex; align-items: center; gap: 6px; }
+        .logo-dot { width: 0.8em; height: 0.8em; fill: var(--btn-society); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.8); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
+
+        .nav-controls { display: flex; gap: 1rem; }
+        .nav-btn {
+            background: transparent; border: 1px solid var(--text-muted); color: var(--text-main);
+            padding: 8px 16px; border-radius: 50px; font-size: 0.85rem; font-weight: 600;
+            display: flex; align-items: center; gap: 8px; transition: 0.3s;
+        }
+        .nav-btn:hover { background: var(--text-main); color: var(--bg-body); }
+        .flag-icon { width: 20px; height: 15px; border-radius: 2px; object-fit: cover;}
+
+        /* --- 7. HERO SECTION --- */
+        section { padding: 6rem 5%; min-height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
+        .hero { text-align: center; min-height: 90vh; padding-top: 8rem; }
+        
+        /* Updated Hero Title: Solid Color for better visibility in Arabic/English */
+        .hero h1 { 
+            font-size: clamp(3rem, 7vw, 5.5rem); 
+            line-height: 1.1; 
+            margin-bottom: 2rem; 
+            font-weight: 900;
+            color: var(--text-main); /* Fallback */
+            color: var(--btn-society); /* Society Blue */
+            /* Ensure opacity is 1 by default to prevent stuck states if JS fails */
+            opacity: 1; 
+        }
+
+        .hero p { font-size: 1.25rem; color: var(--text-muted); max-width: 700px; margin: 0 auto 3rem; line-height: 1.6; }
+        .scroll-indicator { margin-top: auto; animation: bounce 2s infinite; font-size: 0.9rem; color: var(--text-muted); padding-bottom: 2rem; }
+        @keyframes bounce { 0%, 100% {transform: translateY(0);} 50% {transform: translateY(-10px);} }
+
+        /* --- 8. CARDS & GRID --- */
+        .grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem; width: 100%; max-width: 1200px;
+        }
+        .society-card {
+            background: var(--card-bg); border: var(--border-width) solid var(--card-border);
+            padding: 2.5rem; border-radius: 20px; position: relative; overflow: hidden;
+            display: flex; flex-direction: column; transition: transform 0.3s ease;
+        }
+        .society-card:hover { transform: translateY(-5px); border-color: var(--btn-society); }
+        .card-icon { font-size: 2.5rem; margin-bottom: 1rem; color: var(--btn-society); }
+        .card-title { font-size: 1.5rem; margin-bottom: 1rem; }
+        .card-desc { color: var(--text-muted); line-height: 1.6; font-size: 1rem; margin-bottom: 1.5rem; flex-grow: 1; }
+        .card-tag { 
+            font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--btn-society); border: 1px solid var(--btn-society); 
+            padding: 5px 12px; border-radius: 20px; align-self: flex-start;
+        }
+
+        /* --- 9. SPLIT SECTION (Manifesto) --- */
+        .split-section {
+            display: flex; flex-direction: row; gap: 4rem; max-width: 1200px; margin: 0 auto; align-items: center;
+        }
+        .split-text { flex: 1; }
+        .split-visual { flex: 1; height: 400px; background: rgba(37, 99, 235, 0.05); border-radius: 20px; position: relative; display: flex; justify-content: center; align-items: center; }
+        .visual-circle { width: 200px; height: 200px; border-radius: 50%; background: linear-gradient(45deg, var(--btn-society), var(--btn-society-light)); filter: blur(40px); opacity: 0.4; animation: pulse-vis 4s infinite alternate; }
+        @keyframes pulse-vis { from { transform: scale(1); } to { transform: scale(1.2); } }
+
+        .quote-text { font-size: 1.8rem; font-weight: 300; font-style: italic; line-height: 1.5; color: var(--text-main); border-left: 4px solid var(--btn-society); padding-left: 20px; }
+
+        /* --- 10. FOOTER & MISC --- */
+        footer { padding: 4rem 3rem; text-align: center; color: var(--text-muted); border-top: 1px solid var(--card-border); }
+        .back-link { margin-top: 2rem; display: inline-block; color: var(--text-main); font-weight: 600; text-decoration: none; border-bottom: 1px solid currentColor; padding-bottom: 2px;}
+        
+        /* Media Queries */
+        @media (max-width: 768px) {
+            .split-section { flex-direction: column; }
+            .hero h1 { font-size: 3.5rem; }
+            .nav-controls span { display: none; }
+            .nav-controls span.flag-icon { display: block; }
+        }
+    </style>
+</head>
+<body class="no-scroll">
+
+    <div id="preloader">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="aurora-bg"></div>
+    <canvas id="bio-canvas"></canvas>
+    
+    <div class="parallax-blob" style="width: 400px; height: 400px; top: 10%; left: -10%; background: var(--btn-society); opacity: 0.15;" data-speed="0.1"></div>
+    <div class="parallax-blob" style="width: 250px; height: 250px; top: 50%; right: -5%; background: var(--btn-society-light); opacity: 0.1;" data-speed="0.2"></div>
+
+    <div id="cursor-ball"></div>
+
+    <nav>
+        <div class="logo magnetic">
+            <a href="index.html">
+                <span data-i18n="logo_text">WAEY</span>
+                <span style="font-weight: 300; opacity: 0.6;">|</span>
+                <span data-i18n="nav_society" style="color: var(--btn-society);">Society</span>
+                <svg class="logo-dot" viewBox="0 0 10 10">
+                    <circle cx="5" cy="5" r="5"/>
+                </svg>
+            </a>
+        </div>
+
+        <div class="nav-controls">
+            <button class="nav-btn magnetic" onclick="toggleLanguage(true)"> <img id="lang-flag" src="https://flagcdn.com/w40/om.png" alt="Flag" class="flag-icon"> 
+                <span id="lang-text">العربية</span>
+            </button>
+            <button class="nav-btn magnetic" id="theme-btn" onclick="toggleTheme()">
+                <span>☀️</span>
+            </button>
+            <button class="nav-btn magnetic" onclick="toggleContrast()">
+                <span>👁️</span>
+            </button>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1 class="anim-hero" data-i18n="hero_title">The Fabric of<br>Connection</h1>
+        <p class="anim-hero" data-i18n="hero_subtitle">Moving beyond "Community" to design social frameworks that prioritize empathy, equity, and collective evolution.</p>
+        <div class="scroll-indicator" data-i18n="scroll">Scroll to Explore</div>
+    </section>
+
+    <section>
+        <div class="split-section gsap-reveal">
+            <div class="split-visual">
+                <div class="visual-circle"></div>
+                <div style="position: absolute; font-size: 5rem;">🤝</div>
+            </div>
+            <div class="split-text">
+                <h2 style="margin-bottom: 1.5rem;" data-i18n="manifesto_title">The Human Element</h2>
+                <div class="quote-text" data-i18n="manifesto_text">
+                    "We cannot build a sustainable future on a foundation of social fragility. True resilience comes from the strength of our connections, the depth of our empathy, and the inclusivity of our systems."
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2 class="gsap-reveal" style="margin-bottom: 3rem; text-align: center;" data-i18n="pillars_title">Core Pillars</h2>
+        <div class="grid">
+            <div class="society-card gsap-up tilt-card">
+                <span class="card-icon">⚖️</span>
+                <h3 class="card-title" data-i18n="p1_title">Social Equity</h3>
+                <p class="card-desc" data-i18n="p1_desc">Dismantling barriers to ensure every voice is heard and every individual has access to opportunity, regardless of background.</p>
+                <div class="card-tag" data-i18n="p1_tag">Justice</div>
+            </div>
+            <div class="society-card gsap-up tilt-card">
+                <span class="card-icon">🕌</span>
+                <h3 class="card-title" data-i18n="p2_title">Heritage & Future</h3>
+                <p class="card-desc" data-i18n="p2_desc">Honoring our cultural roots while embracing modern advancements. Creating a bridge between wisdom of the past and innovation of the future.</p>
+                <div class="card-tag" data-i18n="p2_tag">Culture</div>
+            </div>
+            <div class="society-card gsap-up tilt-card">
+                <span class="card-icon">🧠</span>
+                <h3 class="card-title" data-i18n="p3_title">Conscious Well-being</h3>
+                <p class="card-desc" data-i18n="p3_desc">Prioritizing mental health and digital mindfulness in an increasingly hyper-connected yet disconnected world.</p>
+                <div class="card-tag" data-i18n="p3_tag">Wellness</div>
+            </div>
+        </div>
+    </section>
+
+    <section style="background: var(--card-bg); padding: 4rem 5%;">
+        <div class="grid" style="text-align: center;">
+            <div class="gsap-count">
+                <span class="card-title" style="font-size: 3rem; color: var(--btn-society); display:block;">30+</span>
+                <span data-i18n="stat_1">Workshops Hosted</span>
+            </div>
+            <div class="gsap-count">
+                <span class="card-title" style="font-size: 3rem; color: var(--btn-society); display:block;">1500+</span>
+                <span data-i18n="stat_2">Lives Impacted</span>
+            </div>
+            <div class="gsap-count">
+                <span class="card-title" style="font-size: 3rem; color: var(--btn-society); display:block;">∞</span>
+                <span data-i18n="stat_3">Possibilities</span>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <h3 data-i18n="footer_cta">Ready to shape society?</h3>
+        <p style="margin: 1rem 0 2rem; max-width: 500px; margin-inline: auto;" data-i18n="footer_sub">Join our next dialogue session or volunteer for our community outreach programs.</p>
+        
+        <a href="mailto:society@waey.om" class="nav-btn magnetic" style="display: inline-flex; border-color: var(--btn-society); color: var(--btn-society);">
+            <span data-i18n="contact_btn">Contact Society Team</span>
+        </a>
+
+        <div style="margin-top: 3rem;">
+            <a href="index.html" class="back-link" data-i18n="back_home">← Back to Main</a>
+        </div>
+        <p style="margin-top: 2rem; font-size: 0.9rem;">&copy; 2026 Waey | Society Division.</p>
+    </footer>
+
+    <script>
+        // --- 1. SETUP & UTILS ---
+        const html = document.documentElement;
+        const themeBtn = document.getElementById('theme-btn');
+        const langText = document.getElementById('lang-text');
+        const langFlag = document.getElementById('lang-flag');
+        const cursor = document.getElementById('cursor-ball');
+        const isMouseDevice = window.matchMedia('(hover: hover)').matches;
+
+        // --- PRELOADER ---
+        window.addEventListener('load', () => {
+            const preloader = document.getElementById('preloader');
+            gsap.to(preloader, { opacity: 0, duration: 0.5, onComplete: () => {
+                preloader.style.display = 'none';
+                document.body.classList.remove('no-scroll');
+            }});
+        });
+
+        // --- 2. TRANSLATIONS ---
+        const translations = {
+            en: {
+                lang_btn: "العربية",
+                flag_url: "https://flagcdn.com/w40/om.png",
+                logo_text: "WAEY",
+                nav_society: "Society",
+                hero_title: "The Fabric of<br>Connection",
+                hero_subtitle: "Moving beyond \"Community\" to design social frameworks that prioritize empathy, equity, and collective evolution.",
+                scroll: "Scroll to Explore",
+                manifesto_title: "The Human Element",
+                manifesto_text: "\"We cannot build a sustainable future on a foundation of social fragility. True resilience comes from the strength of our connections, the depth of our empathy, and the inclusivity of our systems.\"",
+                pillars_title: "Core Pillars",
+                p1_title: "Social Equity",
+                p1_desc: "Dismantling barriers to ensure every voice is heard and every individual has access to opportunity, regardless of background.",
+                p1_tag: "Justice",
+                p2_title: "Heritage & Future",
+                p2_desc: "Honoring our cultural roots while embracing modern advancements. Creating a bridge between wisdom of the past and innovation of the future.",
+                p2_tag: "Culture",
+                p3_title: "Conscious Well-being",
+                p3_desc: "Prioritizing mental health and digital mindfulness in an increasingly hyper-connected yet disconnected world.",
+                p3_tag: "Wellness",
+                stat_1: "Workshops Hosted",
+                stat_2: "Lives Impacted",
+                stat_3: "Possibilities",
+                footer_cta: "Ready to shape society?",
+                footer_sub: "Join our next dialogue session or volunteer for our community outreach programs.",
+                contact_btn: "Contact Society Team",
+                back_home: "← Back to Main"
+            },
+            ar: {
+                lang_btn: "English",
+                flag_url: "https://flagcdn.com/w40/gb.png",
+                logo_text: "وَعـي",
+                nav_society: "المجتمع",
+                hero_title: "نسيـج<br>الترابط",
+                hero_subtitle: "نتجاوز مفهوم \"المجموعة\" لنصمم أطراً اجتماعية تعطي الأولوية للتعاطف، العدالة، والتطور الجماعي.",
+                scroll: "مرر للأسفل للاستكشاف",
+                manifesto_title: "العنصر البشري",
+                manifesto_text: "\"لا يمكننا بناء مستقبل مستدام على أساس اجتماعي هش. المرونة الحقيقية تنبع من قوة روابطنا، عمق تعاطفنا، وشمولية أنظمتنا.\"",
+                pillars_title: "الركائز الأساسية",
+                p1_title: "العدالة الاجتماعية",
+                p1_desc: "إزالة الحواجز لضمان سماع كل صوت وحصول كل فرد على فرصة عادلة، بغض النظر عن خلفيته.",
+                p1_tag: "عدالة",
+                p2_title: "التراث والمستقبل",
+                p2_desc: "تكريم جذورنا الثقافية مع تبني التطور الحديث. بناء جسر يربط حكمة الماضي بابتكارات المستقبل.",
+                p2_tag: "ثقافة",
+                p3_title: "الرفاه الواعي",
+                p3_desc: "إعطاء الأولوية للصحة النفسية والوعي الرقمي في عالم متصل تقنياً ولكنه منفصل إنسانياً.",
+                p3_tag: "رفاهية",
+                stat_1: "ورشة عمل",
+                stat_2: "حياة تأثرت إيجاباً",
+                stat_3: "إمكانيات لا محدودة",
+                footer_cta: "مستعد للمشاركة؟",
+                footer_sub: "انضم إلى جلسة الحوار القادمة أو تطوع في برامجنا للتواصل المجتمعي.",
+                contact_btn: "تواصل مع فريق المجتمع",
+                back_home: "← العودة للرئيسية"
+            }
+        };
+
+        // --- 3. LOGIC FUNCTIONS ---
+        // 'animate' param allows us to skip animation on initial load
+        function toggleLanguage(animate = true) {
+            const currentLang = html.getAttribute('lang');
+            const newLang = currentLang === 'en' ? 'ar' : 'en';
+            html.setAttribute('lang', newLang);
+            html.setAttribute('dir', newLang === 'ar' ? 'rtl' : 'ltr');
+            localStorage.setItem('lang', newLang);
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[newLang][key]) el.innerHTML = translations[newLang][key];
+            });
+
+            langText.innerText = translations[newLang].lang_btn;
+            langFlag.src = translations[newLang].flag_url;
+            
+            // Only run this specific animation if 'animate' is true (user clicked button)
+            if (animate) {
+                gsap.fromTo(".anim-hero", {opacity: 0, y: 20}, {opacity: 1, y: 0, duration: 1, stagger: 0.1});
+            }
+        }
+
+        function toggleTheme() {
+            const current = html.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', next);
+            localStorage.setItem('theme', next);
+            themeBtn.querySelector('span').innerText = next === 'dark' ? "🌙" : "☀️";
+        }
+
+        function toggleContrast() {
+            html.classList.toggle('high-contrast');
+            localStorage.setItem('contrast', html.classList.contains('high-contrast') ? 'high' : 'normal');
+        }
+
+        // --- 4. BIO-CANVAS ---
+        const bioCanvas = document.getElementById('bio-canvas');
+        const ctx = bioCanvas.getContext('2d');
+        let particles = [];
+        let w, h;
+
+        function resizeCanvas() {
+            w = bioCanvas.width = window.innerWidth;
+            h = bioCanvas.height = window.innerHeight;
+            initParticles();
+        }
+
+        function initParticles() {
+            particles = [];
+            const particleCount = window.innerWidth < 768 ? 20 : 40; 
+            for(let i=0; i<particleCount; i++) {
+                particles.push({
+                    x: Math.random() * w,
+                    y: Math.random() * h,
+                    vx: (Math.random() - 0.5) * 0.3, 
+                    vy: (Math.random() - 0.5) * 0.3,
+                    radius: Math.random() * 80 + 40,
+                    type: Math.random() > 0.2 ? 'society' : 'sustain' 
+                });
+            }
+        }
+
+        function animateCanvas() {
+            if(html.classList.contains('high-contrast')) { requestAnimationFrame(animateCanvas); return; }
+            
+            ctx.clearRect(0, 0, w, h);
+            const styles = getComputedStyle(document.body);
+            const sustainRGB = styles.getPropertyValue('--bio-sustain-rgb').trim();
+            const societyRGB = styles.getPropertyValue('--bio-society-rgb').trim();
+            const isDark = html.getAttribute('data-theme') === 'dark';
+
+            particles.forEach((p) => {
+                p.x += p.vx; p.y += p.vy;
+                if(p.x < -p.radius || p.x > w + p.radius) p.vx *= -1;
+                if(p.y < -p.radius || p.y > h + p.radius) p.vy *= -1;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                let gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius);
+                const colorRGB = p.type === 'sustain' ? sustainRGB : societyRGB;
+                const baseOpacity = isDark ? 0.12 : 0.06; 
+                gradient.addColorStop(0, `rgba(${colorRGB}, ${baseOpacity})`);
+                gradient.addColorStop(1, `rgba(${colorRGB}, 0)`);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+            });
+            requestAnimationFrame(animateCanvas);
+        }
+
+        // --- 5. INITIALIZATION ---
+        if (localStorage.getItem('theme') === 'dark') toggleTheme();
+        if (localStorage.getItem('contrast') === 'high') html.classList.add('high-contrast');
+        
+        // FIX FOR ARABIC FADE: Pass 'false' to skip the internal animation
+        // This prevents double-animation conflict on load
+        if (localStorage.getItem('lang') === 'ar') toggleLanguage(false);
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        animateCanvas();
+
+        // --- 6. ANIMATIONS & CURSOR ---
+        if(isMouseDevice) {
+            document.addEventListener('mousemove', (e) => {
+                gsap.to(cursor, { x: e.clientX, y: e.clientY, duration: 0.1 });
+            });
+            
+            // Magnetic effect for buttons
+            document.querySelectorAll('.magnetic').forEach(el => {
+                el.addEventListener('mousemove', (e) => {
+                    const rect = el.getBoundingClientRect();
+                    const x = (e.clientX - rect.left - rect.width / 2) * 0.3;
+                    const y = (e.clientY - rect.top - rect.height / 2) * 0.3;
+                    gsap.to(el, { x: x, y: y, duration: 0.3 });
+                });
+                el.addEventListener('mouseleave', () => {
+                    gsap.to(el, { x: 0, y: 0, duration: 1, ease: "elastic.out(1, 0.3)" });
+                });
+            });
+
+            // Tilt Cards
+            document.querySelectorAll('.tilt-card').forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const rotateX = ((y - rect.height/2) / (rect.height/2)) * -5;
+                    const rotateY = ((x - rect.width/2) / (rect.width/2)) * 5;
+                    gsap.to(card, { transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-10px)`, duration: 0.5 });
+                });
+                card.addEventListener('mouseleave', () => {
+                    gsap.to(card, { transform: `perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)`, duration: 1 });
+                });
+            });
+        }
+
+        // MAIN PAGE LOAD ANIMATION
+        // This runs once on load for both English and Arabic
+        gsap.registerPlugin(ScrollTrigger);
+        gsap.from(".anim-hero", { y: 50, opacity: 0, duration: 1, stagger: 0.2, ease: "power3.out" });
+        gsap.utils.toArray('.gsap-reveal').forEach(elem => {
+            gsap.from(elem, { scrollTrigger: { trigger: elem, start: "top 80%" }, y: 30, opacity: 0, duration: 1 });
+        });
+        gsap.utils.toArray('.gsap-up').forEach((elem, i) => {
+            gsap.from(elem, { scrollTrigger: { trigger: elem, start: "top 85%" }, y: 50, opacity: 0, duration: 0.8, delay: i * 0.1 });
+        });
+
+        window.addEventListener('scroll', () => {
+             document.querySelectorAll('.parallax-blob').forEach(blob => {
+                const speed = blob.getAttribute('data-speed');
+                blob.style.transform = `translateY(${window.scrollY * speed}px)`;
+            });
+        });
+    </script>
+</body>
+</html>
